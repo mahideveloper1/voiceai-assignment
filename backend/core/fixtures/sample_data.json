@@ -1,0 +1,118 @@
+[
+  {
+    "model": "core.organization",
+    "pk": "11111111-1111-1111-1111-111111111111",
+    "fields": {
+      "name": "Acme Corporation",
+      "slug": "acme-corporation",
+      "description": "Leading provider of innovative solutions",
+      "is_active": true,
+      "created_at": "2024-12-01T10:00:00Z",
+      "updated_at": "2024-12-01T10:00:00Z"
+    }
+  },
+  {
+    "model": "core.organization",
+    "pk": "22222222-2222-2222-2222-222222222222",
+    "fields": {
+      "name": "TechStart Inc",
+      "slug": "techstart-inc",
+      "description": "Startup focused on cutting-edge technology",
+      "is_active": true,
+      "created_at": "2024-12-01T11:00:00Z",
+      "updated_at": "2024-12-01T11:00:00Z"
+    }
+  },
+  {
+    "model": "core.project",
+    "pk": "33333333-3333-3333-3333-333333333333",
+    "fields": {
+      "organization": "11111111-1111-1111-1111-111111111111",
+      "name": "Website Redesign",
+      "description": "Complete overhaul of company website",
+      "status": "active",
+      "start_date": "2025-01-01",
+      "end_date": "2025-03-31",
+      "created_at": "2024-12-05T09:00:00Z",
+      "updated_at": "2024-12-05T09:00:00Z"
+    }
+  },
+  {
+    "model": "core.project",
+    "pk": "44444444-4444-4444-4444-444444444444",
+    "fields": {
+      "organization": "11111111-1111-1111-1111-111111111111",
+      "name": "Mobile App Development",
+      "description": "Build native mobile applications for iOS and Android",
+      "status": "planning",
+      "start_date": "2025-02-01",
+      "end_date": "2025-06-30",
+      "created_at": "2024-12-10T14:00:00Z",
+      "updated_at": "2024-12-10T14:00:00Z"
+    }
+  },
+  {
+    "model": "core.task",
+    "pk": "55555555-5555-5555-5555-555555555555",
+    "fields": {
+      "project": "33333333-3333-3333-3333-333333333333",
+      "title": "Design homepage mockup",
+      "description": "Create high-fidelity mockup for new homepage",
+      "status": "completed",
+      "priority": "high",
+      "order": 1,
+      "created_at": "2024-12-06T10:00:00Z",
+      "updated_at": "2024-12-08T15:00:00Z"
+    }
+  },
+  {
+    "model": "core.task",
+    "pk": "66666666-6666-6666-6666-666666666666",
+    "fields": {
+      "project": "33333333-3333-3333-3333-333333333333",
+      "title": "Implement responsive navigation",
+      "description": "Build mobile-friendly navigation menu",
+      "status": "in_progress",
+      "priority": "high",
+      "order": 2,
+      "created_at": "2024-12-07T11:00:00Z",
+      "updated_at": "2024-12-11T16:00:00Z"
+    }
+  },
+  {
+    "model": "core.task",
+    "pk": "77777777-7777-7777-7777-777777777777",
+    "fields": {
+      "project": "33333333-3333-3333-3333-333333333333",
+      "title": "Set up contact form",
+      "description": "Create and integrate contact form with email backend",
+      "status": "todo",
+      "priority": "medium",
+      "order": 3,
+      "created_at": "2024-12-09T12:00:00Z",
+      "updated_at": "2024-12-09T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.taskcomment",
+    "pk": "88888888-8888-8888-8888-888888888888",
+    "fields": {
+      "task": "55555555-5555-5555-5555-555555555555",
+      "author_name": "John Doe",
+      "content": "Great work on the mockup! Love the color scheme.",
+      "created_at": "2024-12-08T16:00:00Z",
+      "updated_at": "2024-12-08T16:00:00Z"
+    }
+  },
+  {
+    "model": "core.taskcomment",
+    "pk": "99999999-9999-9999-9999-999999999999",
+    "fields": {
+      "task": "66666666-6666-6666-6666-666666666666",
+      "author_name": "Jane Smith",
+      "content": "The navigation looks good on mobile. Need to test on tablets.",
+      "created_at": "2024-12-11T17:00:00Z",
+      "updated_at": "2024-12-11T17:00:00Z"
+    }
+  }
+]
