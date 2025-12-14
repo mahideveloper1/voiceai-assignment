@@ -565,14 +565,6 @@ This project includes detailed documentation to help you get started:
 - Railway & Vercel configuration
 - Common issues and solutions
 
-**Codebase Documentation** (`claude.md`):
-- Complete project architecture overview
-- Database schema and relationships
-- GraphQL API reference (queries, mutations, subscriptions)
-- Frontend structure and components
-- Organization isolation implementation
-- Authentication & authorization flow
-- Known issues and fixes
 
 ---
 

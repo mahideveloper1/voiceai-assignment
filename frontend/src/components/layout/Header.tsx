@@ -4,7 +4,7 @@ import { OrganizationSwitcher } from '../organization/OrganizationSwitcher';
 
 export const Header: React.FC = () => {
   return (
-    <header className="bg-blue-600 shadow-md">
+    <header className="bg-blue-400 shadow-md">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <Link to="/" className="text-2xl font-bold text-black ">
           Project Management
