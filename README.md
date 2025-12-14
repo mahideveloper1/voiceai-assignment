@@ -1,9 +1,5 @@
 # Multi-Tenant Project Management System
 
-![CI](https://github.com/mahideveloper1/voiceai-assignment/workflows/CI/badge.svg)
-[![codecov](https://codecov.io/gh/mahideveloper1/voiceai-assignment/branch/master/graph/badge.svg)](https://codecov.io/gh/mahideveloper1/voiceai-assignment)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
 A modern, full-stack project management application built with Django GraphQL backend and React TypeScript frontend, with comprehensive CI/CD pipeline and automated testing.
 
 ## 📚 Table of Contents
@@ -14,7 +10,6 @@ A modern, full-stack project management application built with Django GraphQL ba
 - [Quick Start](#quick-start)
 - [Project Structure](#project-structure)
 - [Multi-Tenancy](#multi-tenancy)
-- [GraphQL API Examples](#graphql-api-examples)
 - [Development](#development)
 - [Testing](#testing)
 - [CI/CD Pipeline](#cicd-pipeline)
@@ -23,9 +18,7 @@ A modern, full-stack project management application built with Django GraphQL ba
 - [Sample Data](#sample-data)
 - [Troubleshooting](#troubleshooting)
 - [Future Improvements](#future-improvements)
-- [Contributing](#contributing)
 - [Documentation](#documentation)
-- [License](#license)
 
 ## Features
 
@@ -87,15 +80,6 @@ cd voiceai
 ```bash
 docker-compose up -d
 ```
-
-This will start:
-- PostgreSQL on port 5432
-- pgAdmin on port 5050 (http://localhost:5050)
-- Redis on port 6379
-
-**pgAdmin credentials:**
-- Email: admin@projectmanagement.com
-- Password: admin
 
 ### 3. Backend Setup
 
@@ -216,7 +200,6 @@ voiceai/
 ├── docker-compose.yml           # Docker services
 ├── CI_CD_SETUP_INSTRUCTIONS.md  # ✅ Complete CI/CD guide
 ├── ENVIRONMENT_VARIABLES.md     # ✅ Environment variables guide
-└── claude.md                    # ✅ Comprehensive codebase documentation
 ```
 
 ## Multi-Tenancy
@@ -234,79 +217,6 @@ curl -X POST http://localhost:8000/graphql/ \
   -H "Content-Type: application/json" \
   -H "X-Organization-Slug: acme-corporation" \
   -d '{"query":"{ projects { id name } }"}'
-```
-
-## GraphQL API Examples
-
-### Query Projects
-
-```graphql
-query {
-  projects(status: "active", limit: 10) {
-    id
-    name
-    description
-    status
-    taskStats {
-      total
-      completed
-      completionRate
-    }
-  }
-}
-```
-
-### Create Project
-
-```graphql
-mutation {
-  createProject(
-    organizationId: "11111111-1111-1111-1111-111111111111"
-    name: "New Project"
-    description: "Project description"
-    status: "planning"
-  ) {
-    project {
-      id
-      name
-      status
-    }
-  }
-}
-```
-
-### Create Task
-
-```graphql
-mutation {
-  createTask(
-    projectId: "33333333-3333-3333-3333-333333333333"
-    title: "Implement feature"
-    description: "Add new functionality"
-    status: "todo"
-    priority: "high"
-  ) {
-    task {
-      id
-      title
-      status
-      priority
-    }
-  }
-}
-```
-
-### Subscribe to Task Updates
-
-```graphql
-subscription {
-  taskUpdated(projectId: "33333333-3333-3333-3333-333333333333") {
-    id
-    title
-    status
-    priority
-  }
-}
 ```
 
 ## Development
@@ -606,80 +516,24 @@ python manage.py loaddata core/fixtures/sample_data.json
 
 ## Future Improvements
 
-### Implemented ✅
+### Implemented 
 - ✅ **CI/CD Pipeline**: Automated testing and deployment with GitHub Actions
 - ✅ **Comprehensive Testing**: 36+ backend tests with pytest, frontend tests with Vitest
 - ✅ **Code Quality Tools**: Black, Flake8, ESLint, Prettier
 - ✅ **Production Deployment**: Docker containers, Railway & Vercel configs
 - ✅ **Organization Data Isolation**: Multi-tenant architecture with complete data separation
 
-### Planned 🚀
+### Planned 
 - User authentication and authorization
 - Email notifications for task assignments
 - File attachments on tasks and comments
 - Activity timeline and audit logs
 - Advanced analytics and reporting
-- Mobile app (React Native)
 - Export functionality (PDF, CSV)
-- Integration with third-party tools (Slack, Jira, etc.)
 - End-to-end testing with Playwright/Cypress
 - Performance monitoring and error tracking (Sentry)
 - Database backups and disaster recovery
 
-## Contributing
-
-### Development Workflow
-
-1. **Create a feature branch**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-2. **Make your changes**
-   - Follow existing code style
-   - Add tests for new features
-   - Update documentation as needed
-
-3. **Run tests and quality checks**
-   ```bash
-   # Backend
-   cd backend
-   black .
-   isort .
-   flake8
-   pytest --cov=core
-
-   # Frontend
-   cd frontend
-   npm run format
-   npm run lint
-   npm run test
-   ```
-
-4. **Commit your changes**
-   ```bash
-   git add .
-   git commit -m "Add: your feature description"
-   ```
-
-5. **Push and create PR**
-   ```bash
-   git push origin feature/your-feature-name
-   # Create PR on GitHub
-   ```
-
-6. **CI Pipeline Checks**
-   - All tests must pass
-   - Code coverage must meet threshold (50%+)
-   - Linting must pass
-   - Build must succeed
-
-### Code Style Guidelines
-
-- **Backend**: Follow PEP 8 (enforced by Black and Flake8)
-- **Frontend**: Follow ESLint rules with Prettier formatting
-- **Commits**: Use conventional commits format (Add/Update/Fix/Refactor)
-- **Tests**: Write tests for all new features and bug fixes
 
 ## Documentation
 
@@ -720,23 +574,8 @@ This project includes detailed documentation to help you get started:
 - Authentication & authorization flow
 - Known issues and fixes
 
-### 🚀 Quick Links
-
-- **Run Tests**: See [Testing](#testing) section
-- **Deploy**: See [Deployment](#deployment) section
-- **Environment Setup**: See [Environment Variables](#environment-variables) section
-- **API Examples**: See [GraphQL API Examples](#graphql-api-examples) section
-
-## License
-
-MIT License
-
-## Support
-
-For issues or questions, please open an issue on GitHub.
-
 ---
 
-**Built with ❤️ using Django, GraphQL, React, and TypeScript**
+**Built using Django, GraphQL, React, and TypeScript**
 
 **CI/CD powered by GitHub Actions, Railway, and Vercel**
