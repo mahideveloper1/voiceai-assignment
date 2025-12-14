@@ -2,6 +2,7 @@ import graphene
 from graphql import GraphQLError
 from core.models import Organization, Project, Task, TaskComment
 from core.schema.types import OrganizationType, ProjectType, TaskType, TaskCommentType
+from core.middleware.tenant import get_current_organization
 
 
 # Organization Mutations
@@ -34,10 +35,19 @@ class CreateProject(graphene.Mutation):
 
     def mutate(self, info, organization_id, name, description='',
                status='planning', start_date=None, end_date=None):
+        # Get current organization from middleware
+        current_org = get_current_organization()
+        if not current_org:
+            raise GraphQLError("Organization not specified. Please select an organization.")
+
+        # Verify user is creating project for their current organization
+        if str(organization_id) != str(current_org.id):
+            raise GraphQLError("You can only create projects for your current organization")
+
         try:
             organization = Organization.objects.get(id=organization_id)
         except Organization.DoesNotExist:
-            raise GraphQLError(f"Organization with id '{organization_id}' not found")
+            raise GraphQLError(f"Organization not found")
 
         project = Project.objects.create(
             organization=organization,
@@ -62,10 +72,16 @@ class UpdateProject(graphene.Mutation):
     project = graphene.Field(ProjectType)
 
     def mutate(self, info, id, **kwargs):
+        # Get current organization from middleware
+        organization = get_current_organization()
+        if not organization:
+            raise GraphQLError("Organization not specified. Please select an organization.")
+
+        # Validate project belongs to current organization
         try:
-            project = Project.objects.get(id=id)
+            project = Project.objects.get(id=id, organization=organization)
         except Project.DoesNotExist:
-            raise GraphQLError(f"Project with id '{id}' not found")
+            raise GraphQLError(f"Project not found in your organization")
 
         for key, value in kwargs.items():
             if value is not None:
@@ -82,12 +98,18 @@ class DeleteProject(graphene.Mutation):
     success = graphene.Boolean()
 
     def mutate(self, info, id):
+        # Get current organization from middleware
+        organization = get_current_organization()
+        if not organization:
+            raise GraphQLError("Organization not specified. Please select an organization.")
+
+        # Validate project belongs to current organization
         try:
-            project = Project.objects.get(id=id)
+            project = Project.objects.get(id=id, organization=organization)
             project.delete()
             return DeleteProject(success=True)
         except Project.DoesNotExist:
-            raise GraphQLError(f"Project with id '{id}' not found")
+            raise GraphQLError(f"Project not found in your organization")
 
 
 # Task Mutations
@@ -105,10 +127,19 @@ class CreateTask(graphene.Mutation):
 
     def mutate(self, info, project_id, title, description='',
                status='todo', priority='medium', due_date=None, order=0):
+        # Get current organization from middleware
+        organization = get_current_organization()
+        if not organization:
+            raise GraphQLError("Organization not specified. Please select an organization.")
+
+        # Validate project belongs to current organization
         try:
-            project = Project.objects.get(id=project_id)
+            project = Project.objects.select_related('organization').get(
+                id=project_id,
+                organization=organization
+            )
         except Project.DoesNotExist:
-            raise GraphQLError(f"Project with id '{project_id}' not found")
+            raise GraphQLError(f"Project not found in your organization")
 
         task = Task.objects.create(
             project=project,
@@ -135,10 +166,19 @@ class UpdateTask(graphene.Mutation):
     task = graphene.Field(TaskType)
 
     def mutate(self, info, id, **kwargs):
+        # Get current organization from middleware
+        organization = get_current_organization()
+        if not organization:
+            raise GraphQLError("Organization not specified. Please select an organization.")
+
+        # Validate task belongs to current organization
         try:
-            task = Task.objects.get(id=id)
+            task = Task.objects.select_related('project__organization').get(
+                id=id,
+                project__organization=organization
+            )
         except Task.DoesNotExist:
-            raise GraphQLError(f"Task with id '{id}' not found")
+            raise GraphQLError(f"Task not found in your organization")
 
         for key, value in kwargs.items():
             if value is not None:
@@ -155,12 +195,21 @@ class DeleteTask(graphene.Mutation):
     success = graphene.Boolean()
 
     def mutate(self, info, id):
+        # Get current organization from middleware
+        organization = get_current_organization()
+        if not organization:
+            raise GraphQLError("Organization not specified. Please select an organization.")
+
+        # Validate task belongs to current organization
         try:
-            task = Task.objects.get(id=id)
+            task = Task.objects.select_related('project__organization').get(
+                id=id,
+                project__organization=organization
+            )
             task.delete()
             return DeleteTask(success=True)
         except Task.DoesNotExist:
-            raise GraphQLError(f"Task with id '{id}' not found")
+            raise GraphQLError(f"Task not found in your organization")
 
 
 # Comment Mutations
@@ -173,10 +222,19 @@ class CreateComment(graphene.Mutation):
     comment = graphene.Field(TaskCommentType)
 
     def mutate(self, info, task_id, author_name, content):
+        # Get current organization from middleware
+        organization = get_current_organization()
+        if not organization:
+            raise GraphQLError("Organization not specified. Please select an organization.")
+
+        # Validate task belongs to current organization
         try:
-            task = Task.objects.get(id=task_id)
+            task = Task.objects.select_related('project__organization').get(
+                id=task_id,
+                project__organization=organization
+            )
         except Task.DoesNotExist:
-            raise GraphQLError(f"Task with id '{task_id}' not found")
+            raise GraphQLError(f"Task not found in your organization")
 
         comment = TaskComment.objects.create(
             task=task,
@@ -194,13 +252,22 @@ class UpdateComment(graphene.Mutation):
     comment = graphene.Field(TaskCommentType)
 
     def mutate(self, info, id, content):
+        # Get current organization from middleware
+        organization = get_current_organization()
+        if not organization:
+            raise GraphQLError("Organization not specified. Please select an organization.")
+
+        # Validate comment's task belongs to current organization
         try:
-            comment = TaskComment.objects.get(id=id)
+            comment = TaskComment.objects.select_related('task__project__organization').get(
+                id=id,
+                task__project__organization=organization
+            )
             comment.content = content
             comment.save()
             return UpdateComment(comment=comment)
         except TaskComment.DoesNotExist:
-            raise GraphQLError(f"Comment with id '{id}' not found")
+            raise GraphQLError(f"Comment not found in your organization")
 
 
 class DeleteComment(graphene.Mutation):
@@ -210,12 +277,21 @@ class DeleteComment(graphene.Mutation):
     success = graphene.Boolean()
 
     def mutate(self, info, id):
+        # Get current organization from middleware
+        organization = get_current_organization()
+        if not organization:
+            raise GraphQLError("Organization not specified. Please select an organization.")
+
+        # Validate comment's task belongs to current organization
         try:
-            comment = TaskComment.objects.get(id=id)
+            comment = TaskComment.objects.select_related('task__project__organization').get(
+                id=id,
+                task__project__organization=organization
+            )
             comment.delete()
             return DeleteComment(success=True)
         except TaskComment.DoesNotExist:
-            raise GraphQLError(f"Comment with id '{id}' not found")
+            raise GraphQLError(f"Comment not found in your organization")
 
 
 # Root Mutation

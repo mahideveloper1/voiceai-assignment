@@ -3,6 +3,7 @@ from graphql import GraphQLError
 from django.db.models import Q
 from core.schema.types import OrganizationType, ProjectType, TaskType, TaskCommentType
 from core.models import Organization, Project, Task, TaskComment
+from core.middleware.tenant import get_current_organization
 
 
 class Query(graphene.ObjectType):
@@ -50,7 +51,13 @@ class Query(graphene.ObjectType):
             raise GraphQLError(f"Organization with slug '{slug}' not found")
 
     def resolve_projects(self, info, status=None, search=None, limit=None, offset=None):
-        queryset = Project.objects.select_related('organization').all()
+        # Get current organization from middleware
+        organization = get_current_organization()
+        if not organization:
+            raise GraphQLError("Organization not specified. Please select an organization.")
+
+        # Filter by organization
+        queryset = Project.objects.select_related('organization').filter(organization=organization)
 
         if status:
             queryset = queryset.filter(status=status)
@@ -69,14 +76,27 @@ class Query(graphene.ObjectType):
         return queryset
 
     def resolve_project(self, info, id):
+        # Get current organization from middleware
+        organization = get_current_organization()
+        if not organization:
+            raise GraphQLError("Organization not specified. Please select an organization.")
+
         try:
-            return Project.objects.select_related('organization').get(id=id)
+            return Project.objects.select_related('organization').get(id=id, organization=organization)
         except Project.DoesNotExist:
-            raise GraphQLError(f"Project with id '{id}' not found")
+            raise GraphQLError(f"Project not found in your organization")
 
     def resolve_tasks(self, info, project_id=None, status=None, priority=None,
                       search=None, limit=None, offset=None):
-        queryset = Task.objects.select_related('project').all()
+        # Get current organization from middleware
+        organization = get_current_organization()
+        if not organization:
+            raise GraphQLError("Organization not specified. Please select an organization.")
+
+        # Filter by organization through project relationship
+        queryset = Task.objects.select_related('project', 'project__organization').filter(
+            project__organization=organization
+        )
 
         if project_id:
             queryset = queryset.filter(project_id=project_id)
@@ -101,12 +121,34 @@ class Query(graphene.ObjectType):
         return queryset
 
     def resolve_task(self, info, id):
+        # Get current organization from middleware
+        organization = get_current_organization()
+        if not organization:
+            raise GraphQLError("Organization not specified. Please select an organization.")
+
         try:
-            return Task.objects.select_related('project').get(id=id)
+            return Task.objects.select_related('project', 'project__organization').get(
+                id=id,
+                project__organization=organization
+            )
         except Task.DoesNotExist:
-            raise GraphQLError(f"Task with id '{id}' not found")
+            raise GraphQLError(f"Task not found in your organization")
 
     def resolve_task_comments(self, info, task_id, limit=None, offset=None):
+        # Get current organization from middleware
+        organization = get_current_organization()
+        if not organization:
+            raise GraphQLError("Organization not specified. Please select an organization.")
+
+        # Verify task belongs to current organization before returning comments
+        try:
+            Task.objects.select_related('project__organization').get(
+                id=task_id,
+                project__organization=organization
+            )
+        except Task.DoesNotExist:
+            raise GraphQLError(f"Task not found in your organization")
+
         queryset = TaskComment.objects.filter(task_id=task_id)
 
         if offset:

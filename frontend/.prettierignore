@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.vite/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Environment files
+.env*
+!.env.example
+
+# Generated files
+src/graphql/generated/
+
+# IDE
+.vscode/
+.idea/
+
+# Misc
+*.log
+.DS_Store
