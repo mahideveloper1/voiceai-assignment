@@ -4,16 +4,19 @@ export const CREATE_COMMENT = gql`
   mutation CreateComment(
     $taskId: UUID!
     $authorName: String!
+    $authorEmail: String
     $content: String!
   ) {
     createComment(
       taskId: $taskId
       authorName: $authorName
+      authorEmail: $authorEmail
       content: $content
     ) {
       comment {
         id
         authorName
+        authorEmail
         content
         createdAt
       }

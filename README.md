@@ -1,6 +1,6 @@
 # Multi-Tenant Project Management System
 
-A modern, full-stack project management application built with Django GraphQL backend and React TypeScript frontend, with comprehensive CI/CD pipeline and automated testing.
+A modern, full-stack project management application built with Django GraphQL backend and React TypeScript frontend, featuring real-time WebSocket updates and organization-based multi-tenancy.
 
 ## 📚 Table of Contents
 
@@ -10,35 +10,24 @@ A modern, full-stack project management application built with Django GraphQL ba
 - [Quick Start](#quick-start)
 - [Project Structure](#project-structure)
 - [Multi-Tenancy](#multi-tenancy)
+- [Real-Time Updates](#real-time-updates)
 - [Development](#development)
-- [Testing](#testing)
-- [CI/CD Pipeline](#cicd-pipeline)
-- [Deployment](#deployment)
 - [Environment Variables](#environment-variables)
 - [Sample Data](#sample-data)
 - [Troubleshooting](#troubleshooting)
-- [Future Improvements](#future-improvements)
-- [Documentation](#documentation)
 
 ## Features
 
-### Core Features
 - **Multi-tenant Architecture**: Organization-based data isolation using slug-based authentication
-- **Real-time Updates**: WebSocket subscriptions for live task and comment updates
-- **Project Management**: Create, update, and track projects with status indicators
-- **Task Board**: Kanban-style board with drag-and-drop task organization
-- **Task Comments**: Collaborative commenting system on tasks
+- **Real-time Updates**: WebSocket connections for live task and comment updates
+- **Project Management**: Create, update, delete, and track projects with status indicators
+- **Task Board**: Kanban-style board with task organization across different statuses
+- **Task Comments**: Collaborative commenting system with author email tracking
+- **Organization Management**: Create and switch between multiple organizations
 - **Advanced Filtering**: Search and filter projects and tasks
 - **Responsive Design**: Mobile-friendly interface built with TailwindCSS
 - **Type-Safe**: Full TypeScript implementation on frontend
-
-### DevOps & Quality
-- **Automated CI/CD**: GitHub Actions pipeline for testing and deployment
-- **Comprehensive Testing**: 36+ backend tests (pytest) and frontend component tests (Vitest)
-- **Code Quality**: Automated linting (Black, Flake8, ESLint, Prettier)
-- **Code Coverage**: 50%+ coverage enforced on all PRs
-- **Production Ready**: Docker containers, health checks, and deployment configs
-- **Multi-Environment**: Separate configs for development, testing, and production
+- **GraphQL API**: Efficient data fetching with GraphQL queries and mutations
 
 ## Tech Stack
 
@@ -63,7 +52,7 @@ A modern, full-stack project management application built with Django GraphQL ba
 
 - **Python 3.11+**
 - **Node.js 18+**
-- **Docker & Docker Compose** (for PostgreSQL and Redis)
+- **Docker** (for PostgreSQL and Redis)
 - **Git**
 
 ## Quick Start
@@ -77,8 +66,23 @@ cd voiceai
 
 ### 2. Start Docker Services
 
+**Start PostgreSQL:**
 ```bash
-docker-compose up -d
+docker run -d \
+  --name pm_postgres \
+  -e POSTGRES_DB=project_management \
+  -e POSTGRES_USER=pm_user \
+  -e POSTGRES_PASSWORD=pm_password \
+  -p 5432:5432 \
+  postgres:15-alpine
+```
+
+**Start Redis:**
+```bash
+docker run -d \
+  --name pm_redis \
+  -p 6379:6379 \
+  redis:7-alpine
 ```
 
 ### 3. Backend Setup
@@ -136,9 +140,6 @@ Frontend will be available at: **http://localhost:5173**
 
 ```
 voiceai/
-├── .github/
-│   └── workflows/
-│       └── ci.yml               # GitHub Actions CI/CD pipeline
 ├── backend/                      # Django backend
 │   ├── project_management/       # Django project settings
 │   │   ├── settings.py          # Main configuration
@@ -160,46 +161,32 @@ voiceai/
 │   │   ├── consumers/           # WebSocket consumers
 │   │   ├── fixtures/            # Sample data
 │   │   └── admin.py            # Django admin config
-│   ├── tests/                   # ✅ Test suite (36+ tests)
-│   │   ├── test_models/         # Model tests
-│   │   └── test_graphql/        # GraphQL API tests
-│   ├── pytest.ini               # ✅ pytest configuration
-│   ├── conftest.py              # ✅ Test fixtures
-│   ├── .flake8                  # ✅ Linting rules
-│   ├── pyproject.toml           # ✅ Black/isort config
-│   ├── Dockerfile               # ✅ Production Docker image
-│   ├── railway.json             # ✅ Railway deployment config
-│   ├── requirements.txt         # Production dependencies
-│   ├── requirements-dev.txt     # ✅ Development dependencies
+│   ├── requirements.txt         # Python dependencies
 │   └── manage.py
 ├── frontend/                     # React frontend
 │   ├── src/
-│   │   ├── __tests__/           # ✅ Test suite
-│   │   │   ├── setup.ts         # Test configuration
-│   │   │   └── components/      # Component tests
 │   │   ├── components/          # React components
 │   │   │   ├── common/         # Reusable components
 │   │   │   ├── layout/         # Layout components
+│   │   │   ├── organization/   # Organization components
 │   │   │   ├── projects/       # Project components
 │   │   │   └── tasks/          # Task components
 │   │   ├── pages/              # Page components
 │   │   ├── graphql/            # GraphQL operations
 │   │   │   ├── queries/
 │   │   │   ├── mutations/
-│   │   │   └── subscriptions/
-│   │   ├── types/              # TypeScript types
+│   │   │   └── subscriptions/  # Real-time subscriptions
+│   │   ├── hooks/              # Custom React hooks
+│   │   │   └── useProjectWebSocket.ts  # WebSocket hook
 │   │   ├── contexts/           # React contexts
+│   │   │   └── OrganizationContext.tsx # Multi-tenancy context
 │   │   ├── utils/              # Utilities
 │   │   │   └── apollo.ts       # Apollo Client setup
 │   │   └── App.tsx             # Main app component
-│   ├── vitest.config.ts         # ✅ Vitest configuration
-│   ├── .prettierrc              # ✅ Prettier configuration
-│   ├── vercel.json              # ✅ Vercel deployment config
-│   ├── package.json             # ✅ Updated with test scripts
+│   ├── package.json
 │   └── vite.config.ts
-├── docker-compose.yml           # Docker services
-├── CI_CD_SETUP_INSTRUCTIONS.md  # ✅ Complete CI/CD guide
-├── ENVIRONMENT_VARIABLES.md     # ✅ Environment variables guide
+├── CLAUDE.md                    # Complete project documentation
+└── ENVIRONMENT_VARIABLES.md     # Environment setup guide
 ```
 
 ## Multi-Tenancy
@@ -219,6 +206,38 @@ curl -X POST http://localhost:8000/graphql/ \
   -d '{"query":"{ projects { id name } }"}'
 ```
 
+## Real-Time Updates
+
+The application uses **WebSocket** connections for real-time collaboration:
+
+### How It Works
+
+1. **Django Channels** - WebSocket server handling connections
+2. **Redis** - Channel layer for broadcasting messages
+3. **Custom Hook** - `useProjectWebSocket` manages WebSocket connection in React
+4. **Automatic Updates** - Tasks and comments update in real-time across all connected clients
+
+### What Updates in Real-Time
+
+- ✅ **Task Creation** - New tasks appear instantly
+- ✅ **Task Updates** - Status changes, edits reflect immediately
+- ✅ **Task Deletion** - Deleted tasks disappear from all views
+- ✅ **Comments** - New comments appear without refresh
+
+### Testing Real-Time Features
+
+1. Open **two browser windows** side-by-side
+2. Navigate both to the same project
+3. Create/update/delete tasks in one window
+4. Watch changes appear instantly in the other window!
+
+**WebSocket Console Logs:**
+```
+[WebSocket] Connecting to: ws://localhost:8000/ws/projects/<id>/
+[WebSocket] Connected to project: <id>
+[WebSocket] Task created: {id: "...", title: "..."}
+```
+
 ## Development
 
 ### Backend Development
@@ -231,20 +250,11 @@ python manage.py migrate
 # Create new app
 python manage.py startapp app_name
 
-# Run tests
-pytest -v
+# Load sample data
+python manage.py loaddata core/fixtures/sample_data.json
 
-# Run tests with coverage
-pytest --cov=core --cov-report=html
-
-# Code quality checks
-black --check .
-flake8
-isort --check .
-
-# Format code
-black .
-isort .
+# Create superuser
+python manage.py createsuperuser
 
 # Shell access
 python manage.py shell
@@ -264,171 +274,7 @@ npm run preview
 
 # Run linter
 npm run lint
-
-# Run tests
-npm test
-
-# Run tests with coverage
-npm run test:coverage
-
-# Check code formatting
-npm run format:check
-
-# Format code
-npm run format
-
-# Generate GraphQL types (after backend changes)
-npm run codegen
 ```
-
-## Testing
-
-### Running Tests
-
-**Backend Tests** (pytest):
-```bash
-cd backend
-pip install -r requirements-dev.txt
-pytest -v --cov=core
-```
-
-**Frontend Tests** (Vitest):
-```bash
-cd frontend
-npm install
-npm run test
-```
-
-### Test Coverage
-
-- **Backend**: 36+ tests covering models, GraphQL queries/mutations, and organization isolation
-- **Frontend**: Component tests with React Testing Library
-- **Coverage Threshold**: 50% minimum enforced by CI pipeline
-- **View Coverage Reports**:
-  - Backend: Open `backend/htmlcov/index.html`
-  - Frontend: Open `frontend/coverage/index.html`
-
-### Writing Tests
-
-**Backend Example** (pytest):
-```python
-# backend/tests/test_models/test_organization.py
-import pytest
-from core.models import Organization
-
-@pytest.mark.django_db
-def test_organization_creation():
-    org = Organization.objects.create(name="Test Org")
-    assert org.slug == "test-org"
-```
-
-**Frontend Example** (Vitest):
-```typescript
-// frontend/src/__tests__/components/MyComponent.test.tsx
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { MyComponent } from '../../components/MyComponent';
-
-describe('MyComponent', () => {
-  it('renders correctly', () => {
-    render(<MyComponent />);
-    expect(screen.getByText('Hello')).toBeInTheDocument();
-  });
-});
-```
-
-## CI/CD Pipeline
-
-### Automated Testing & Deployment
-
-Every push to `master` and pull request automatically triggers:
-
-1. **Code Quality Checks**
-   - Backend: Black, Flake8, isort
-   - Frontend: ESLint, Prettier, TypeScript compiler
-
-2. **Automated Tests**
-   - Backend: pytest with PostgreSQL and Redis services
-   - Frontend: Vitest with jsdom environment
-   - Coverage: Must meet 50% threshold
-
-3. **Build Verification**
-   - Backend: Docker image build
-   - Frontend: Production build (`npm run build`)
-
-4. **Deployment** (on merge to master)
-   - Backend → Railway (automatic)
-   - Frontend → Vercel (automatic)
-
-### CI Pipeline Status
-
-View pipeline runs: [GitHub Actions](https://github.com/mahideveloper1/voiceai-assignment/actions)
-
-### Local CI Simulation
-
-Run the same checks that CI runs:
-
-**Backend**:
-```bash
-cd backend
-black --check .
-isort --check .
-flake8
-pytest --cov=core --cov-fail-under=50
-```
-
-**Frontend**:
-```bash
-cd frontend
-npm run format:check
-npm run lint
-npx tsc --noEmit
-npm run test:coverage
-npm run build
-```
-
-## Deployment
-
-### Production Deployment
-
-#### Backend (Railway)
-
-1. **Create Railway Account**: https://railway.app/
-2. **Create New Project** from GitHub repository
-3. **Add Services**:
-   - PostgreSQL database
-   - Redis database
-4. **Set Environment Variables**:
-   ```env
-   DEBUG=False
-   SECRET_KEY=<generate-strong-key>
-   ALLOWED_HOSTS=*.railway.app
-   CORS_ALLOWED_ORIGINS=https://your-frontend.vercel.app
-   ```
-5. **Deploy**: Railway auto-deploys from `master` branch
-
-**Health Check**: `https://your-backend.railway.app/health/`
-
-#### Frontend (Vercel)
-
-1. **Install Vercel CLI**: `npm i -g vercel`
-2. **Login**: `vercel login`
-3. **Link Project**:
-   ```bash
-   cd frontend
-   vercel link
-   ```
-4. **Set Environment Variables**:
-   ```env
-   VITE_GRAPHQL_HTTP_URL=https://your-backend.railway.app/graphql/
-   VITE_GRAPHQL_WS_URL=wss://your-backend.railway.app/graphql/
-   ```
-5. **Deploy**: `vercel --prod`
-
-### Deployment Documentation
-
-- **Complete Setup Guide**: See [CI_CD_SETUP_INSTRUCTIONS.md](./CI_CD_SETUP_INSTRUCTIONS.md)
-- **Environment Variables**: See [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md)
 
 ## Environment Variables
 
@@ -450,16 +296,16 @@ cp frontend/.env.example frontend/.env.local
 
 **Backend** (`backend/.env`):
 ```env
-DEBUG=True                                    # Set to False in production
-SECRET_KEY=your-secret-key                   # Generate strong key for production
+DEBUG=True
+SECRET_KEY=your-secret-key
 DATABASE_NAME=project_management
 DATABASE_USER=pm_user
 DATABASE_PASSWORD=pm_password
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
 REDIS_URL=redis://localhost:6379/0
-ALLOWED_HOSTS=localhost,127.0.0.1          # Add production domains
-CORS_ALLOWED_ORIGINS=http://localhost:5173  # Add production frontend URL
+ALLOWED_HOSTS=localhost,127.0.0.1
+CORS_ALLOWED_ORIGINS=http://localhost:5173
 ```
 
 **Frontend** (`frontend/.env.local`):
@@ -471,8 +317,8 @@ VITE_ORGANIZATION_SLUG=acme-corporation    # Optional: default organization
 
 ### Detailed Documentation
 
-For complete environment variable documentation including production setup:
-- See [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md) - Full guide with all variables explained
+For complete environment variable documentation:
+- See [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md) - Full guide with all variables
 
 ## Sample Data
 
@@ -494,12 +340,13 @@ python manage.py loaddata core/fixtures/sample_data.json
 ### Docker not starting
 
 - Ensure Docker Desktop is running
-- Check port conflicts (5432, 5050, 6379)
-- Run: `docker-compose down && docker-compose up -d`
+- Check port conflicts (5432, 6379)
+- Restart containers: `docker restart pm_postgres pm_redis`
 
 ### Backend connection errors
 
-- Verify PostgreSQL is running: `docker ps`
+- Verify PostgreSQL is running: `docker ps | grep pm_postgres`
+- Verify Redis is running: `docker ps | grep pm_redis`
 - Check database credentials in `.env`
 - Ensure virtual environment is activated
 
@@ -508,66 +355,15 @@ python manage.py loaddata core/fixtures/sample_data.json
 - Verify backend is running on port 8000
 - Check `.env.local` has correct API URLs
 - Verify organization slug is set correctly
+- Check browser console for CORS errors
 
-### GraphQL codegen errors
+### WebSocket not connecting
 
-- Ensure backend is running before running `npm run codegen`
-- Check `codegen.yml` schema URL is correct
-
-## Future Improvements
-
-### Implemented 
-- ✅ **CI/CD Pipeline**: Automated testing and deployment with GitHub Actions
-- ✅ **Comprehensive Testing**: 36+ backend tests with pytest, frontend tests with Vitest
-- ✅ **Code Quality Tools**: Black, Flake8, ESLint, Prettier
-- ✅ **Production Deployment**: Docker containers, Railway & Vercel configs
-- ✅ **Organization Data Isolation**: Multi-tenant architecture with complete data separation
-
-### Planned 
-- User authentication and authorization
-- Email notifications for task assignments
-- File attachments on tasks and comments
-- Activity timeline and audit logs
-- Advanced analytics and reporting
-- Export functionality (PDF, CSV)
-- End-to-end testing with Playwright/Cypress
-- Performance monitoring and error tracking (Sentry)
-- Database backups and disaster recovery
-
-
-## Documentation
-
-### 📖 Comprehensive Guides
-
-This project includes detailed documentation to help you get started:
-
-| Document | Description | Link |
-|----------|-------------|------|
-| **CI/CD Setup Guide** | Complete guide for setting up automated testing and deployment | [CI_CD_SETUP_INSTRUCTIONS.md](./CI_CD_SETUP_INSTRUCTIONS.md) |
-| **Environment Variables** | Detailed explanation of all environment variables for dev and production | [ENVIRONMENT_VARIABLES.md](./ENVIRONMENT_VARIABLES.md) |
-| **Codebase Documentation** | Comprehensive technical documentation of the entire codebase | [claude.md](./claude.md) |
-
-### 🔍 What Each Guide Covers
-
-**CI/CD Setup Guide** (`CI_CD_SETUP_INSTRUCTIONS.md`):
-- Running tests locally (backend & frontend)
-- Deploying to Railway (backend)
-- Deploying to Vercel (frontend)
-- Understanding the CI/CD pipeline
-- Writing additional tests
-- Troubleshooting CI/CD issues
-
-**Environment Variables Guide** (`ENVIRONMENT_VARIABLES.md`):
-- Complete table of all required variables
-- Local development setup
-- Testing environment setup
-- Production deployment setup
-- Railway & Vercel configuration
-- Common issues and solutions
+- Ensure Redis is running: `docker exec -it pm_redis redis-cli ping` (should return PONG)
+- Check browser console for WebSocket connection errors
+- Verify `REDIS_URL` in backend `.env` is correct
 
 
 ---
 
-**Built using Django, GraphQL, React, and TypeScript**
-
-**CI/CD powered by GitHub Actions, Railway, and Vercel**
+**Built with Django, GraphQL, React, and TypeScript**

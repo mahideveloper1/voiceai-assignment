@@ -7,6 +7,7 @@ export const GET_ORGANIZATIONS = gql`
       name
       slug
       description
+      contactEmail
       isActive
       createdAt
       updatedAt
@@ -21,6 +22,7 @@ export const GET_ORGANIZATION = gql`
       name
       slug
       description
+      contactEmail
       isActive
       createdAt
       updatedAt

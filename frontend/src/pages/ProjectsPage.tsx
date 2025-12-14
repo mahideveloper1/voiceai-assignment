@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_PROJECTS } from '../graphql/queries/projects';
-import { CREATE_PROJECT } from '../graphql/mutations/projects';
+import { CREATE_PROJECT, DELETE_PROJECT } from '../graphql/mutations/projects';
 import { ProjectCard } from '../components/projects/ProjectCard';
 import { Button } from '../components/common/Button';
 import { Spinner } from '../components/common/Spinner';
@@ -33,6 +33,10 @@ export const ProjectsPage: React.FC = () => {
     refetchQueries: [{ query: GET_PROJECTS }],
   });
 
+  const [deleteProject] = useMutation(DELETE_PROJECT, {
+    refetchQueries: [{ query: GET_PROJECTS }],
+  });
+
   const handleCreateProject = async () => {
     if (!currentOrganization) {
       alert('No organization selected. Please select an organization first.');
@@ -57,6 +61,18 @@ export const ProjectsPage: React.FC = () => {
     } catch (err) {
       console.error('Error creating project:', err);
       alert('Error creating project. Check console for details.');
+    }
+  };
+
+  const handleDeleteProject = async (id: string) => {
+    try {
+      await deleteProject({
+        variables: { id },
+      });
+      refetch();
+    } catch (err) {
+      console.error('Error deleting project:', err);
+      alert('Error deleting project. Check console for details.');
     }
   };
 
@@ -111,6 +127,7 @@ export const ProjectsPage: React.FC = () => {
             key={project.id}
             project={project}
             onClick={() => navigate(`/projects/${project.id}`)}
+            onDelete={handleDeleteProject}
           />
         ))}
       </div>

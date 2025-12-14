@@ -10,6 +10,7 @@ class TaskComment(models.Model):
         related_name='comments'
     )
     author_name = models.CharField(max_length=255)
+    author_email = models.EmailField(max_length=255, blank=True)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
